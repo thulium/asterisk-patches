@@ -1,0 +1,29 @@
+--- a/asterisk/channels/chan_sip.c	2021-01-17 15:58:26.552978937 +0100
++++ b/asterisk/channels/chan_sip.c	2021-01-17 16:17:59.746440947 +0100
+@@ -20302,7 +20302,7 @@
+ }
+ 
+ /* the last argument is left-aligned, so we don't need a size anyways */
+-#define PEERS_FORMAT2 "%-25.25s %-39.39s %-3.3s %-10.10s %-10.10s %-3.3s %-8s %-11s %-32.32s %s\n"
++#define PEERS_FORMAT2 "%-25.25s %-39.39s %-3.3s %-10.10s %-10.10s %-3.3s %-8s %-11s %-32.32s %s %s\n"
+ 
+ /*! \brief Used in the sip_show_peers functions to pass parameters */
+ struct show_peers_context {
+@@ -20364,7 +20364,7 @@
+ 
+ 	if (!s) {
+ 		/* Normal list */
+-		ast_cli(fd, PEERS_FORMAT2, "Name/username", "Host", "Dyn", "Forcerport", "Comedia", "ACL", "Port", "Status", "Description", (cont.realtimepeers ? "Realtime" : ""));
++        ast_cli(fd, PEERS_FORMAT2, "Name/username", "Host", "Dyn", "Forcerport", "Comedia", "ACL", "Port", "Status", "Description", (cont.realtimepeers ? "Realtime" : ""), "Useragent");
+ 	}
+ 
+ 	ao2_lock(peers);
+@@ -20485,7 +20485,7 @@
+ 		(!ast_acl_list_is_empty(peer->acl)) ? " A " : "   ",       /* permit/deny */
+ 		tmp_port, status,
+ 		peer->description ? peer->description : "",
+-		cont->realtimepeers ? (peer->is_realtime ? "Cached RT" : "") : "");
++		cont->realtimepeers ? (peer->is_realtime ? "Cached RT" : "") : "", peer->useragent);
+ 	} else {	/* Manager format */
+ 		/* The names here need to be the same as other channels */
+ 		astman_append(s,
