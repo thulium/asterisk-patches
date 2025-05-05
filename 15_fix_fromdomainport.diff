@@ -1,0 +1,67 @@
+Index: asterisk/channels/chan_sip.c
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/asterisk/channels/chan_sip.c b/asterisk/channels/chan_sip.c
+--- a/asterisk/channels/chan_sip.c	(revision 42bdc8613c274687974ae580010180134f8ec173)
++++ b/asterisk/channels/chan_sip.c	(date 1664441346037)
+@@ -14457,7 +14457,9 @@
+ 
+ 	if (ast_strlen_zero(p->fromdomain)) {
+ 		d = ast_sockaddr_stringify_host_remote(&p->ourip);
+-	}
++	    ourport = ast_sockaddr_port(&p->ourip);
++	};
++
+ 	if (p->owner) {
+ 		connected_id = ast_channel_connected_effective_id(p->owner);
+ 
+@@ -14474,6 +14476,7 @@
+ 			l = "anonymous";
+ 			n = CALLERID_UNKNOWN;
+ 			d = FROMDOMAIN_INVALID;
++			ourport = STANDARD_SIP_PORT;
+ 		}
+ 	}
+ 
+@@ -14508,7 +14511,12 @@
+ 	else /* Save for any further attempts */
+ 		ast_string_field_set(p, fromname, n);
+ 
+-	/* Allow domain to be overridden */
++    /* Allow domain to be overridden */
++    if (!ast_strlen_zero(p->fromdomain))
++       ourport = p->fromdomainport;
++    else
++       p->fromdomainport = ourport;
++
+ 	if (!ast_strlen_zero(p->fromdomain))
+ 		d = p->fromdomain;
+ 	else /* Save for any further attempts */
+@@ -14519,8 +14527,6 @@
+ 		ast_uri_encode(l, tmp_l, sizeof(tmp_l), ast_uri_sip_user);
+ 	}
+ 
+-	ourport = (p->fromdomainport && (p->fromdomainport != STANDARD_SIP_PORT)) ? p->fromdomainport : ast_sockaddr_port(&p->ourip);
+-
+ 	if (!sip_standard_port(p->socket.type, ourport)) {
+ 		ret = ast_str_set(&from, 0, "<sip:%s@%s:%d>;tag=%s", tmp_l, d, ourport, p->tag);
+ 	} else {
+@@ -15593,7 +15599,7 @@
+ {
+ 	struct sip_request req;
+ 	struct ast_str *out = ast_str_alloca(500);
+-	int ourport = (p->fromdomainport && (p->fromdomainport != STANDARD_SIP_PORT)) ? p->fromdomainport : ast_sockaddr_port(&p->ourip);
++	int ourport;
+ 	const char *domain;
+ 	const char *exten = S_OR(vmexten, default_vmexten);
+ 
+@@ -15604,6 +15610,7 @@
+ 
+ 	/* domain initialization occurs here because initreqprep changes ast_sockaddr_stringify string. */
+ 	domain = S_OR(p->fromdomain, ast_sockaddr_stringify_host_remote(&p->ourip));
++    ourport = p->fromdomainport;
+ 
+ 	if (!sip_standard_port(p->socket.type, ourport)) {
+ 		if (p->socket.type == AST_TRANSPORT_UDP) {
