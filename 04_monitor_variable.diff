@@ -1,0 +1,21 @@
+--- a/asterisk/res/res_monitor.c	2021-01-17 15:58:27.363015840 +0100
++++ b/asterisk/res/res_monitor.c	2021-01-17 16:21:11.665191216 +0100
+@@ -646,10 +646,18 @@
+ 		/* if previous monitor file existed in a subdirectory, the directory will not be removed */
+ 		unlink(ast_channel_monitor(chan)->filename_base);
+ 
++		if (ast_strings_match(tmpstring, "regex", "^.*wewnetrzne.*$")) {
++	                ast_verbose("Monitor filename %s NOT changed to %s\n", ast_channel_monitor(chan)->filename_base, tmpstring);
++			doexit = 1;	
++		};        
++        
+ 		if (doexit) {
+ 			UNLOCK_IF_NEEDED(chan, need_lock);
+ 			return 0;
+ 		}
++		
++		pbx_builtin_setvar_helper(chan, "MONITOR_ORIG",ast_channel_monitor(chan)->filename_base);
++		ast_verbose("Monitor filename %s changed to %s\n", ast_channel_monitor(chan)->filename_base, tmpstring);
+ 
+ 		ast_copy_string(ast_channel_monitor(chan)->filename_base, tmpstring, sizeof(ast_channel_monitor(chan)->filename_base));
+ 		ast_channel_monitor(chan)->filename_changed = 1;
