@@ -1,0 +1,30 @@
+diff --git a/asterisk/apps/app_queue.c b/asterisk/apps/app_queue.c
+index 5d2721b..6625bbc 100644
+--- a/asterisk/apps/app_queue.c
++++ b/asterisk/apps/app_queue.c
+@@ -5737,6 +5737,8 @@ struct local_optimization {
+  */
+ struct queue_stasis_data {
+ 	AST_DECLARE_STRING_FIELDS(
++		/*! The unique ID of the caller's channel. */
++		AST_STRING_FIELD(original_uniqueid);
+ 		/*! The unique ID of the caller's channel. */
+ 		AST_STRING_FIELD(caller_uniqueid);
+ 		/*! The unique ID of the queue member's channel */
+@@ -5821,6 +5823,7 @@ static struct queue_stasis_data *queue_stasis_data_alloc(struct queue_ent *qe,
+ 	}
+ 
+ 	ast_string_field_set(queue_data, caller_uniqueid, ast_channel_uniqueid(qe->chan));
++	ast_string_field_set(queue_data, original_uniqueid, ast_channel_uniqueid(qe->chan));
+ 	ast_string_field_set(queue_data, member_uniqueid, ast_channel_uniqueid(peer));
+ 	queue_data->queue = queue_ref(qe->parent);
+ 	queue_data->starttime = starttime;
+@@ -5872,7 +5875,7 @@ static void log_attended_transfer(struct queue_stasis_data *queue_data,
+ 		return;
+ 	}
+ 
+-	ast_queue_log(queue_data->queue->name, queue_data->caller_uniqueid, queue_data->member->membername, "ATTENDEDTRANSFER", "%s|%ld|%ld|%d",
++	ast_queue_log(queue_data->queue->name, queue_data->original_uniqueid, queue_data->member->membername, "ATTENDEDTRANSFER", "%s|%ld|%ld|%d",
+ 			ast_str_buffer(transfer_str),
+ 			(long) (queue_data->starttime - queue_data->holdstart),
+ 			(long) (time(NULL) - queue_data->starttime), queue_data->caller_pos);
