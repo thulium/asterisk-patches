@@ -1,0 +1,12 @@
+--- a/asterisk/apps/app_queue.c
++++ b/asterisk/apps/app_queue.c
+@@ -4952,6 +4952,9 @@
+ 				if (!ast_strlen_zero(ast_channel_call_forward(o->chan)) && !forwardsallowed) {
+ 					ast_verb(3, "Forwarding %s to '%s' prevented.\n", inchan_name, ast_channel_call_forward(o->chan));
+ 					numnochan++;
++					endtime = (long) time(NULL);
++                                        endtime -= starttime;
++                                        rna(endtime * 1000, qe, o->chan, on, membername, qe->parent->autopausebusy);
+ 					do_hang(o);
+ 					winner = NULL;
+ 					continue;
